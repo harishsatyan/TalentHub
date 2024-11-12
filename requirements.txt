@@ -2,7 +2,7 @@ flask
 flask-sqlalchemy
 email_validator
 flask_bcrypt
-msal flask-session
+flask-session
 flask_login
 flask_wtf
 xlwt
