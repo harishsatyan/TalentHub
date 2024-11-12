@@ -28,7 +28,6 @@ msal==1.31.0
 msgspec==0.18.6
 numpy==2.1.3
 openpyxl==3.1.5
-OPTK @ file:////WIN-LS4K65EIB5M/GTS_FileShare/pypi/OPTK/OPTK.zip#sha256=51db8e87ead3bcaefc20d75e01184590f28a4a2e33f95016248654d156f67b89
 pandas==2.2.3
 pillow==11.0.0
 ping3==4.0.8
