@@ -1,0 +1,14 @@
+flask
+flask-sqlalchemy
+email_validator
+flask_bcrypt
+msal flask-session
+flask_login
+flask_wtf
+xlwt
+pywin32
+pandas
+waitress
+xlrd
+openpyxl
+gunicorn
