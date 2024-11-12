@@ -6,7 +6,6 @@ msal flask-session
 flask_login
 flask_wtf
 xlwt
-pywin32
 pandas
 waitress
 xlrd
