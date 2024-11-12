@@ -1,0 +1,10 @@
+q_ID,question_type,q_topic,choices_no,q_text,q_choice1,q_choice2,q_choice3,q_choice4,q_ans,q_points,dept_Func
+7,Objective,Conjoint,4,What is conjoint,A,B,C,D,Option 1,5,SP
+13,Objective,Conjoint,4,What is conjoint data,A,B,C,D,Option 1,5,SP
+17,Objective,Conjoint,4,Where we use conjoint?,A,B,C,D,Option 2,2,SP
+19,Objective,Conjoint,4,This is test question text. This is test question text.  This is test question text.  This is test question text.  This is test question text.  This is test question text.  This is test question text.  This is test question text. ,A,B,C,D,Option 1,2,SP
+27,Objective,Conjoint,4,What is conjoint file,A,B,C,D,Option 1,5,SP
+28,Objective,Conjoint,4,What is conjoint file,A,B,C,D,Option 1,5,SP
+29,Objective,Conjoint,4,What is matrix file,A,B,C,D,Option 1,5,SP
+30,Objective,Conjoint,4,What is matrix,A,B,C,D,Option 1,5,SP
+31,Objective,Conjoint,4,What is matrix file,A,B,C,D,Option 1,5,SP
