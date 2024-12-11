@@ -3,19 +3,42 @@ from MyApp import bycrpt, app
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
+from sqlalchemy.orm import declarative_base
+Base = declarative_base()
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker 
+import os,urllib
+# Connection string format
+connection_string = "mssql+pyodbc://username:password@hostname:port/database_name?driver=ODBC+Driver+18+for+SQL+Server"
+
+# Replace the placeholders with your actual database information
+username = 'satyanh'
+password = 'Dec@2024'
+hostname = 'sampledbtb.database.windows.net'
+port = '1433'  # Default port for Azure SQL Database
+database_name = 'sampleDB'
+DATABASE_PASSWORD_UPDATED = urllib.parse.quote_plus(password)
+# Create engine
+engine = create_engine(f'mssql+pyodbc://{username}:{DATABASE_PASSWORD_UPDATED}@{hostname}:{port}/{database_name}?driver=ODBC+Driver+18+for+SQL+Server&connect_timeout=30')
+Session = sessionmaker(bind=engine)
+Usession = Session()
+
+Base.metadata.create_all(engine)
+
 
 @login_manager.user_loader
 def load_user(user_id):
-     return UserDataNew.query.get(int(user_id))
+     return Usession.query(UserDataNew).get(int(user_id))
 
 
-class GDCList(db.Model, UserMixin):
+class GDCList(Base, UserMixin):
       __tablename__ = 'GDCList'
       id = db.Column(db.Integer(), primary_key=True )
       GDCSelect = db.Column(db.String(length=30), unique=True, nullable=False)
       Cluster = db.Column(db.String(length=50), unique=True, nullable=False)
       
-class date_table(db.Model):
+class date_table(Base):
    __tablename__ = 'date_table'
    Date_ID = db.Column(db.Integer(), primary_key=True )
    start1 = db.Column(db.String(length=30), nullable=True )
@@ -28,7 +51,7 @@ class date_table(db.Model):
    year = db.Column(db.String(length=50),nullable=True)
    period = db.Column(db.String(length=50),nullable=True)
 
-class UserDataNew(db.Model, UserMixin):    
+class UserDataNew(Base, UserMixin):    
       __tablename__ = 'user_data_new'
       id = db.Column(db.Integer(), primary_key=True )
       username = db.Column(db.String(length=30), unique=True, nullable=False)
@@ -39,14 +62,15 @@ class UserDataNew(db.Model, UserMixin):
       Cluster = db.Column(db.String(length=30), nullable=True)
       MngID = db.Column(db.String(length=30), nullable=True)
 
-class UserDataEmail(db.Model, UserMixin):    
+class UserDataEmail(Base, UserMixin):    
       __tablename__ = 'UserDataEmail'
       id = db.Column(db.Integer(), primary_key=True )
       username = db.Column(db.String(length=30), unique=True, nullable=False)
       email_add = db.Column(db.String(length=50), unique=True, nullable=False)
     
 
-class TMStatusByAdmin(db.Model):
+class TMStatusByAdmin(Base):
+    __tablename__ = 'TMStatusByAdmin'
     id = db.Column(db.Integer(),primary_key=True)
     department = db.Column(db.String(length=30))
     level = db.Column(db.String(length=30))
@@ -56,10 +80,10 @@ class TMStatusByAdmin(db.Model):
     remarks = db.Column(db.Integer())
     year = db.Column(db.Integer(),nullable=False)
     period = db.Column(db.String(length=50),nullable=False) 
-    uploadby = db.Column(db.String(), db.ForeignKey('user_data_new.email_add'))
+    uploadby = db.Column(db.String(50), db.ForeignKey('user_data_new.email_add'))
     
 
-class UploadByAdmin_obj(db.Model):
+class UploadByAdmin_obj(Base):
     __tablename__ = 'UploadByAdmin_obj'
     id = db.Column(db.Integer(),primary_key=True)
     filename = db.Column(db.String(length=30))
@@ -74,7 +98,7 @@ class UploadByAdmin_obj(db.Model):
         return f'<UploadByAdmin_obj {self.id}>'
 
 
-class sup_topic_count(db.Model):
+class sup_topic_count(Base):
    __tablename__ = 'sup_topic_count'
    topic_ID = db.Column(db.Integer(), primary_key=True )
    topic_name = db.Column(db.String(length=30), nullable=False )
@@ -85,7 +109,7 @@ class sup_topic_count(db.Model):
    def __repr__(self):
         return f'<sup_topic_count {self.topic_ID}>'
 
-class sup_nominated_count(db.Model):
+class sup_nominated_count(Base):
    __tablename__ = 'sup_nominated_count'
    topic_ID = db.Column(db.Integer(), primary_key=True )
    topic_name = db.Column(db.String(length=30), nullable=False )
@@ -97,7 +121,7 @@ class sup_nominated_count(db.Model):
    def __repr__(self):
         return f'<sup_nominated_count {self.topic_ID}>'
 
-class AttendanceUploadByAdmin(db.Model):
+class AttendanceUploadByAdmin(Base):
     __tablename__ = 'AttendanceUploadByAdmin'
     id = db.Column(db.Integer(),primary_key=True)
     Subject = db.Column(db.String(), nullable=False)
@@ -109,12 +133,12 @@ class AttendanceUploadByAdmin(db.Model):
     Feedback = db.Column(db.String(length=30),nullable=True,default='Not Done')
     Period = db.Column(db.String(length=30),nullable=False)
     Year = db.Column(db.String(length=30),nullable=False)
-    uploadby = db.Column(db.String(), db.ForeignKey('user_data_new.email_add'))
+    uploadby = db.Column(db.String(50), db.ForeignKey('user_data_new.email_add'))
     def __repr__(self):
         return f'<AttendanceUploadByAdmin {self.id}>'
     
 
-class SupResultStatusByAdmin(db.Model):
+class SupResultStatusByAdmin(Base):
     __tablename__ = 'SupResultStatusByAdmin'
     id = db.Column(db.Integer(),primary_key=True)
     mailid = db.Column(db.String(length=30))
@@ -126,10 +150,10 @@ class SupResultStatusByAdmin(db.Model):
     comment = db.Column(db.String(length=200)) 
     year = db.Column(db.Integer(),nullable=False)
     period = db.Column(db.String(length=50),nullable=False) 
-    uploadby = db.Column(db.String(), db.ForeignKey('user_data_new.email_add'))
+    uploadby = db.Column(db.String(50), db.ForeignKey('user_data_new.email_add'))
 
 
-class SUP_topic(db.Model):
+class SUP_topic(Base):
    __tablename__ = 'SUP_topic'
    topic_ID = db.Column(db.Integer(), primary_key=True )
    topics_added = db.Column(db.String(length=30), nullable=False )
@@ -142,12 +166,13 @@ class SUP_topic(db.Model):
    NoOfGDC = db.Column(db.String(length=100), nullable=False)
    SPSubTopic = db.Column(db.String(length=100), nullable=True)
    IsDeleted = db.Column(db.Text(), default="No")
-   uploadby = db.Column(db.String(), db.ForeignKey('user_data_new.email_add'))
+   uploadby = db.Column(db.String(50), db.ForeignKey('user_data_new.email_add'))
    def __repr__(self):
         return f'<SUP_topic {self.topic_ID}>'
 
 
-class Nominate_topic_by(db.Model):
+class Nominate_topic_by(Base):
+   __tablename__ = 'Nominate_topic_by'
    topic_ID = db.Column(db.Integer(), primary_key=True )
    topics_added = db.Column(db.String(length=30), nullable=False )
    question_type = db.Column(db.String(length=30), nullable=False)
@@ -163,9 +188,9 @@ class Nominate_topic_by(db.Model):
    period = db.Column(db.String(length=50),nullable=False) 
    StartTime = db.Column(db.String(),nullable=False) 
    StopTime = db.Column(db.String(),nullable=False) 
-   uploadby = db.Column(db.String(), db.ForeignKey('user_data_new.email_add'))
+   uploadby = db.Column(db.String(50), db.ForeignKey('user_data_new.email_add'))
 
-class topic_question(db.Model):
+class topic_question(Base):
    __tablename__ = 'topic_question' 
    q_ID = db.Column(db.Integer(), primary_key=True )
    question_type = db.Column(db.String(length=30), nullable=False)
@@ -182,11 +207,12 @@ class topic_question(db.Model):
    dept_Func = db.Column(db.String(length=100), nullable=False)
    level = db.Column(db.String(length=100), nullable=False)
    IsDeleted= db.Column(db.String(length=100), nullable=False, default="No")
-   uploadby = db.Column(db.String(), db.ForeignKey('user_data_new.email_add'))
+   uploadby = db.Column(db.String(50), db.ForeignKey('user_data_new.email_add'))
    def __repr__(self):
         return f'<topic_question {self.q_ID}>' 
    
-class calendar_events(db.Model,UserMixin):
+class calendar_events(Base,UserMixin):
+    __tablename__ = 'calendar_events' 
     eventid = db.Column(db.Integer, primary_key=True)
     title =db.Column(db.String, nullable=False)
     date =db.Column(db.String, nullable=False)
@@ -201,7 +227,7 @@ class calendar_events(db.Model,UserMixin):
     NoOfGDC = db.Column(db.String(length=100), nullable=False)
     SPSubTopic = db.Column(db.String(length=100), nullable=True)
     IsDeleted = db.Column(db.String, nullable=True,default="No")
-    uploadby = db.Column(db.String(), db.ForeignKey('user_data_new.email_add'))
+    uploadby = db.Column(db.String(50), db.ForeignKey('user_data_new.email_add'))
     
     def to_json(self):
         return {
@@ -216,10 +242,11 @@ class calendar_events(db.Model,UserMixin):
         return f'Item {self.eventid}'
     
 
-class Attendance(db.Model):
+class Attendance(Base):
+    __tablename__ = 'Attendance' 
     id = db.Column(db.Integer(),primary_key=True)
-    user_name = db.Column(db.String(), db.ForeignKey('user_data_new.email_add'))
-    user_dept = db.Column(db.String(), db.ForeignKey('user_data_new.user_dept'))
+    user_name = db.Column(db.String(50), db.ForeignKey('user_data_new.email_add'),nullable=False)
+    # user_dept = db.Column(db.String(30), db.ForeignKey('user_data_new.user_dept'),nullable=False)
     location = db.Column(db.String(length=30),nullable=False)
     Topicname = db.Column(db.String(length=30),nullable=False)
     name = db.Column(db.String(length=30),nullable=False)
@@ -238,12 +265,12 @@ class Attendance(db.Model):
     year = db.Column(db.Integer(),nullable=False)
     period = db.Column(db.String(length=50),nullable=False)
 
-class IncidentTbl(db.Model):
+class IncidentTbl(Base):
     __tablename__ = 'IncidentTbl'
     id = db.Column(db.Integer(),primary_key=True)
     inc_id = db.Column(db.String(length=30),nullable=False)
-    user_name = db.Column(db.String(), db.ForeignKey('user_data_new.email_add'))
-    user_dept = db.Column(db.String(), db.ForeignKey('user_data_new.user_dept'))
+    user_name = db.Column(db.String(50), db.ForeignKey('user_data_new.email_add'))
+    # user_dept = db.Column(db.String(30), db.ForeignKey('user_data_new.user_dept'))
     location = db.Column(db.String(length=30),nullable=False)
     issuetype = db.Column(db.String(length=30),nullable=False)
     modulename = db.Column(db.String(length=30),nullable=False)
@@ -256,7 +283,8 @@ class IncidentTbl(db.Model):
     Admincomment = db.Column(db.String, nullable=False)
     data = db.Column(db.LargeBinary)
 
-class Upload(db.Model):
+class Upload(Base):
+    __tablename__ = 'Upload' 
     id = db.Column(db.Integer(),primary_key=True)
     filename = db.Column(db.String(length=30))
     data = db.Column(db.LargeBinary)
@@ -267,7 +295,8 @@ class Upload(db.Model):
     period = db.Column(db.String(length=50),nullable=False) 
     uploadby = db.Column(db.Integer(), db.ForeignKey('user_data_new.id'))
 
-class answerPerQnr(db.Model):
+class answerPerQnr(Base):
+    __tablename__ = 'answerPerQnr' 
     id = db.Column(db.Integer(),primary_key=True)
     useraccount = db.Column(db.Integer(), db.ForeignKey('user_data_new.id'))
     useranswer = db.Column(db.String(length=50),nullable=True)
@@ -281,7 +310,7 @@ class answerPerQnr(db.Model):
     period = db.Column(db.String(length=50),nullable=False)
     qtype = db.Column(db.String(length=50),nullable=False)
 
-class result_test(db.Model):
+class result_test(Base):
     __tablename__ = 'result_test'
     id = db.Column(db.Integer(),primary_key=True)
     session_id = db.Column(db.String(length=50),nullable=True)
@@ -292,10 +321,11 @@ class result_test(db.Model):
     year = db.Column(db.Integer(),nullable=False)
     period = db.Column(db.String(length=50),nullable=False)
     PassMark = db.Column(db.Integer(),nullable=False)
-    uploadby = db.Column(db.String(), db.ForeignKey('user_data_new.email_add'))
+    uploadby = db.Column(db.String(50), db.ForeignKey('user_data_new.email_add'))
 
 
-class training_topic_nomination(db.Model):
+class training_topic_nomination(Base):
+   __tablename__ = 'training_topic_nomination' 
    topic_ID = db.Column(db.Integer(), primary_key=True )
    topics_added = db.Column(db.String(length=30), nullable=False )
    Dept = db.Column(db.String(length=30), nullable=True )
@@ -303,10 +333,11 @@ class training_topic_nomination(db.Model):
    NominatedBy  = db.Column(db.String(length=30), nullable=False)  
    year = db.Column(db.Integer(),nullable=False)
    period = db.Column(db.String(length=50),nullable=False) 
-   uploadby = db.Column(db.String(), db.ForeignKey('user_data_new.email_add'))
+   uploadby = db.Column(db.String(50), db.ForeignKey('user_data_new.email_add'))
 
 
-class training_topic_count(db.Model):
+class training_topic_count(Base):
+   __tablename__ = 'training_topic_count'
    topic_ID = db.Column(db.Integer(), primary_key=True )
    topic_name = db.Column(db.String(length=30), nullable=False )
    Count = db.Column(db.Integer(), nullable=True )
@@ -316,7 +347,8 @@ class training_topic_count(db.Model):
    ContactList = db.Column(db.String(),nullable=False)
 
 
-class OJTNew(db.Model):
+class OJTNew(Base):
+    __tablename__ = 'OJTNew'
     ojtid = db.Column(db.Integer(),primary_key=True)
     TrainerEmail = db.Column(db.String(length=30),nullable=False)
     TraineeName = db.Column(db.String(length=30),nullable=False)
@@ -331,7 +363,8 @@ class OJTNew(db.Model):
     uploadby = db.Column(db.Integer(), db.ForeignKey('user_data_new.id'))
     
 
-class UploadByAdmin(db.Model):
+class UploadByAdmin(Base):
+    __tablename__ = 'UploadByAdmin'
     id = db.Column(db.Integer(),primary_key=True)
     filename = db.Column(db.String(length=30))
     data = db.Column(db.LargeBinary)
@@ -343,11 +376,11 @@ class UploadByAdmin(db.Model):
     uploadby = db.Column(db.Integer(), db.ForeignKey('user_data_new.id'))
 
 
-class TrainingRequest(db.Model):
+class TrainingRequest(Base):
     __tablename__ = 'TrainingRequest'
     id = db.Column(db.Integer(),primary_key=True)
-    user_name = db.Column(db.String(), db.ForeignKey('user_data_new.email_add'))
-    user_dept = db.Column(db.String(), db.ForeignKey('user_data_new.user_dept'))
+    user_name = db.Column(db.String(50), db.ForeignKey('user_data_new.email_add'))
+    # user_dept = db.Column(db.String(30), db.ForeignKey('user_data_new.user_dept'))
     location = db.Column(db.String(length=30),nullable=False)
     Topicname = db.Column(db.String(length=30),nullable=False)
     Department = db.Column(db.String(length=30),nullable=False)
@@ -357,8 +390,6 @@ class TrainingRequest(db.Model):
     SMEContact = db.Column(db.String(), nullable=True)
     def __repr__(self):
         return f'<TrainingRequest {self.id}>'
-
-
 
 
 
