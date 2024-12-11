@@ -17,7 +17,7 @@ from email.message import EmailMessage
 import smtplib
 import pythoncom
 from os.path import join, dirname, realpath
-import os
+import os,urllib
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey 
 from sqlalchemy.orm import declarative_base 
 from sqlalchemy.orm import relationship 
@@ -47,6 +47,23 @@ import getpass
 # logging.warning('warning')
 # logging.error('error')
 # logging.critical('critical')
+
+
+# Connection string format
+connection_string = "mssql+pyodbc://username:password@hostname:port/database_name?driver=ODBC+Driver+18+for+SQL+Server"
+
+# Replace the placeholders with your actual database information
+username = 'satyanh'
+password = 'Dec@2024'
+hostname = 'sampledbtb.database.windows.net'
+port = '1433'  # Default port for Azure SQL Database
+database_name = 'sampleDB'
+DATABASE_PASSWORD_UPDATED = urllib.parse.quote_plus(password)
+# Create engine
+engine = create_engine(f'mssql+pyodbc://{username}:{DATABASE_PASSWORD_UPDATED}@{hostname}:{port}/{database_name}?driver=ODBC+Driver+18+for+SQL+Server&connect_timeout=30')
+
+Session = sessionmaker(bind=engine)
+Usession = Session()
 
 # Upload folder
 UPLOAD_FOLDER = 'static/files'
@@ -82,8 +99,9 @@ def UserEmailCapture():
         'email': user_email
     }
    
-    user_data_new = UserDataEmail.query.filter(func.lower(UserDataEmail.email_add)==func.lower(user_email)).first()
-   
+    # user_data_new = UserDataEmail.query.filter(func.lower(UserDataEmail.email_add)==func.lower(user_email)).first()
+    user_data_new = Usession.query(UserDataNew).filter(func.lower(UserDataNew.email_add)==func.lower(user_email)).first()  
+    print(user_data_new)
     print("Session",session['user_data_new'])
    
     if user_data_new is None:
@@ -92,8 +110,8 @@ def UserEmailCapture():
             username=user_name,
             email_add=user_email
         )
-        db.session.add(user_to_create)
-        db.session.commit()
+        Usession.add(user_to_create)
+        Usession.commit()
        
     return redirect(url_for('adm'))
 
@@ -108,11 +126,11 @@ def adm():
     user_email = user_data_new.get('email')
     
     
-    user_data_new = UserDataNew.query.filter(func.lower(UserDataNew.email_add)==func.lower(user_email)).first()  
-    
+    user_data_new = Usession.query(UserDataNew).filter(func.lower(UserDataNew.email_add)==func.lower(user_email)).first()  
+    print(user_data_new)
     GDCSelect1 = request.args.get('GDCSelect')
     
-    getGDC = GDCList.query.filter_by(GDCSelect=GDCSelect1).all()
+    getGDC = Usession.query(GDCList).filter_by(GDCSelect=GDCSelect1).all()
     
     if user_data_new:
         login_user(user_data_new)  
@@ -123,7 +141,7 @@ def adm():
         if formss.validate_on_submit() or request.method=="POST":
             
             GDCSelect1 = request.args.get('GDCSelect')
-            getGDC = GDCList.query.filter_by(GDCSelect=GDCSelect1).all()
+            getGDC = Usession.query(GDCList).filter_by(GDCSelect=GDCSelect1).all()
                 
             if "@kantar.com" in formss.MngID.data:
                 print("success1")
@@ -137,7 +155,7 @@ def adm():
                 # User is new, create their profile
                 
                 GDCSelect1 = request.args.get('GDCSelect')
-                getGDC = GDCList.query.filter_by(GDCSelect=GDCSelect1).all()
+                getGDC = Usession.query(GDCList).filter_by(GDCSelect=GDCSelect1).all()
                 
                 user_to_create = UserDataNew(
                     username = user_name,
@@ -148,8 +166,8 @@ def adm():
                     MngID=formss.MngID.data,
                     user_type="user"
                 )
-                db.session.add(user_to_create)
-                db.session.commit()
+                Usession.add(user_to_create)
+                Usession.commit()
                 
                 login_user(user_to_create)
                 flash('Account created successfully!', category='success')
@@ -168,11 +186,11 @@ def admSide():
     user_email = user_data_new.get('email')
    
     NavActive = f'Home'        
-    date_val = date_table.query.first()
+    date_val = Usession.query(date_table).first()
     period = date_val.period
     year = date_val.year
     #user_email = user_email
-    user_data_new = UserDataNew.query.filter_by(email_add=user_email).first()  
+    user_data_new = Usession.query(UserDataNew).filter_by(email_add=user_email).first()  
     user_name = user_data_new.username
     user_dept = user_data_new.user_dept
     user_type = user_data_new.user_type
@@ -181,19 +199,19 @@ def admSide():
    
    
     if "admin" in user_type:
-       calEvents_SP = calendar_events.query.filter_by(dept="SP").all()
-       calEvents_DP = calendar_events.query.filter_by(dept="DP").all()
-       calEvents_PM = calendar_events.query.filter_by(dept="PM").all()
-       calEvents_CH = calendar_events.query.filter_by(dept="CH").all()
-       calEvents_CO = calendar_events.query.filter_by(dept="CO").all()
+       calEvents_SP = Usession.query(calendar_events).filter_by(dept="SP").all()
+       calEvents_DP = Usession.query(calendar_events).filter_by(dept="DP").all()
+       calEvents_PM = Usession.query(calendar_events).filter_by(dept="PM").all()
+       calEvents_CH = Usession.query(calendar_events).filter_by(dept="CH").all()
+       calEvents_CO = Usession.query(calendar_events).filter_by(dept="CO").all()
     else:    
-       calEvents_SP = calendar_events.query.filter_by(dept="SP").filter(calendar_events.NoOfGDC.like(f"%{user_gdc}%")).all()
-       calEvents_DP = calendar_events.query.filter_by(dept="DP").filter(calendar_events.NoOfGDC.like(f"%{user_gdc}%")).all()
-       calEvents_PM = calendar_events.query.filter_by(dept="PM").filter(calendar_events.NoOfGDC.like(f"%{user_gdc}%")).all()
-       calEvents_CH = calendar_events.query.filter_by(dept="CH").filter(calendar_events.NoOfGDC.like(f"%{user_gdc}%")).all()
-       calEvents_CO = calendar_events.query.filter_by(dept="CO").filter(calendar_events.NoOfGDC.like(f"%{user_gdc}%")).all()
+       calEvents_SP = Usession.query(calendar_events).filter_by(dept="SP").filter(calendar_events.NoOfGDC.like(f"%{user_gdc}%")).all()
+       calEvents_DP = Usession.query(calendar_events).filter_by(dept="DP").filter(calendar_events.NoOfGDC.like(f"%{user_gdc}%")).all()
+       calEvents_PM = Usession.query(calendar_events).filter_by(dept="PM").filter(calendar_events.NoOfGDC.like(f"%{user_gdc}%")).all()
+       calEvents_CH = Usession.query(calendar_events).filter_by(dept="CH").filter(calendar_events.NoOfGDC.like(f"%{user_gdc}%")).all()
+       calEvents_CO = Usession.query(calendar_events).filter_by(dept="CO").filter(calendar_events.NoOfGDC.like(f"%{user_gdc}%")).all()
 
-    calEvents = training_topic_nomination.query.filter_by(year=year,period=period,NominatedBy=user_id).all()
+    calEvents = Usession.query(training_topic_nomination).filter_by(year=year,period=period,NominatedBy=user_id).all()
  
     calEvents_SP_filtered = []
     calEvents_DP_filtered = []
@@ -248,7 +266,7 @@ def admSide():
          else:
              calEvents_CO_filtered_Matched.append(event)
              
-    date_val = date_table.query.first()
+    date_val = Usession.query(date_table).first()
    
     print("admin" in user_type)            
     if "admin" in user_type:
