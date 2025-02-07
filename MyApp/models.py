@@ -12,15 +12,23 @@ import os,urllib
 # Connection string format
 connection_string = "mssql+pyodbc://username:password@hostname:port/database_name?driver=ODBC+Driver+18+for+SQL+Server"
 
+
 # Replace the placeholders with your actual database information
-username = 'satyanh'
-password = 'Dec@2024'
-hostname = 'sampledbtb.database.windows.net'
+username = 'ciadmin'
+password = 'Cirrt@123'
+hostname = 'cisqlserver.database.windows.net'
 port = '1433'  # Default port for Azure SQL Database
-database_name = 'sampleDB'
+database_name = 'talenthubdb'
+DATABASE_USERNAME_UPDATED = urllib.parse.quote_plus(username)
 DATABASE_PASSWORD_UPDATED = urllib.parse.quote_plus(password)
+DATABASE_UPDATED = urllib.parse.quote_plus(database_name)
+# ip_address = '10.247.138.1'
 # Create engine
-engine = create_engine(f'mssql+pyodbc://{username}:{DATABASE_PASSWORD_UPDATED}@{hostname}:{port}/{database_name}?driver=ODBC+Driver+18+for+SQL+Server&connect_timeout=30')
+# engine = create_engine(f'mssql+pyodbc://{DATABASE_USERNAME_UPDATED}:{DATABASE_PASSWORD_UPDATED}@{hostname}:{port}/{DATABASE_UPDATED}?driver=ODBC+Driver+18+for+SQL+Server&connect_timeout=30')
+#engine = create_engine(f'mssql+pyodbc://{username}:{password}@{hostname}:{port}/{database_name}?driver=ODBC+Driver+18+for+SQL+Server')#&connect_timeout=30
+engine = create_engine(f'mssql+pyodbc://{username}:{DATABASE_PASSWORD_UPDATED}@{hostname}:{port}/{database_name}?driver=ODBC+Driver+18+for+SQL+Server')#&connect_timeout=30
+
+
 Session = sessionmaker(bind=engine)
 Usession = Session()
 
@@ -52,7 +60,7 @@ class date_table(Base):
    period = db.Column(db.String(length=50),nullable=True)
 
 class UserDataNew(Base, UserMixin):    
-      __tablename__ = 'user_data_new'
+      __tablename__ = 'UserDataNew'
       id = db.Column(db.Integer(), primary_key=True )
       username = db.Column(db.String(length=30), unique=True, nullable=False)
       email_add = db.Column(db.String(length=50), unique=True, nullable=False)
