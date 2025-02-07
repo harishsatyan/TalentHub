@@ -53,14 +53,18 @@ import getpass
 connection_string = "mssql+pyodbc://username:password@hostname:port/database_name?driver=ODBC+Driver+18+for+SQL+Server"
 
 # Replace the placeholders with your actual database information
-username = 'satyanh'
-password = 'Dec@2024'
-hostname = 'sampledbtb.database.windows.net'
+username = 'ciadmin'
+password = 'Cirrt@123'
+hostname = 'cisqlserver.database.windows.net'
 port = '1433'  # Default port for Azure SQL Database
-database_name = 'sampleDB'
+database_name = 'talenthubdb'
+# DATABASE_USERNAME_UPDATED = urllib.parse.quote_plus(username)
 DATABASE_PASSWORD_UPDATED = urllib.parse.quote_plus(password)
+# DATABASE_UPDATED = urllib.parse.quote_plus(database_name)
 # Create engine
-engine = create_engine(f'mssql+pyodbc://{username}:{DATABASE_PASSWORD_UPDATED}@{hostname}:{port}/{database_name}?driver=ODBC+Driver+18+for+SQL+Server&connect_timeout=30')
+# engine = create_engine(f'mssql+pyodbc://{DATABASE_USERNAME_UPDATED}:{DATABASE_PASSWORD_UPDATED}@{hostname}:{port}/{DATABASE_UPDATED}?driver=ODBC+Driver+18+for+SQL+Server&connect_timeout=30')
+
+engine = create_engine(f'mssql+pyodbc://{username}:{DATABASE_PASSWORD_UPDATED}@{hostname}:{port}/{database_name}?driver=ODBC+Driver+18+for+SQL+Server')#&connect_timeout=30
 
 Session = sessionmaker(bind=engine)
 Usession = Session()
@@ -100,8 +104,9 @@ def UserEmailCapture():
     }
    
     # user_data_new = UserDataEmail.query.filter(func.lower(UserDataEmail.email_add)==func.lower(user_email)).first()
-    user_data_new = Usession.query(UserDataNew).filter(func.lower(UserDataNew.email_add)==func.lower(user_email)).first()  
-    print(user_data_new)
+    
+    user_data_new = Usession.query(UserDataEmail).filter(func.lower(UserDataEmail.email_add)==func.lower(user_email)).first()  
+    # print(user_data_new)
     print("Session",session['user_data_new'])
    
     if user_data_new is None:
@@ -127,7 +132,7 @@ def adm():
     
     
     user_data_new = Usession.query(UserDataNew).filter(func.lower(UserDataNew.email_add)==func.lower(user_email)).first()  
-    print(user_data_new)
+    # print(user_data_new)
     GDCSelect1 = request.args.get('GDCSelect')
     
     getGDC = Usession.query(GDCList).filter_by(GDCSelect=GDCSelect1).all()
@@ -136,6 +141,7 @@ def adm():
         login_user(user_data_new)  
         return redirect(url_for('admSide'))
     else:    
+        
         formss = RegisterForm()
             
         if formss.validate_on_submit() or request.method=="POST":
@@ -175,6 +181,7 @@ def adm():
         
         # Handle GET request or invalid form submission (GET request)
         return render_template('deptpage.html', formss=formss,getGDC=getGDC,GDCSelect=GDCSelect1)
+        # return render_template('deptpage.html', formss=formss)
     
     
  
